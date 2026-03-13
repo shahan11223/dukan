@@ -1,7 +1,9 @@
 {
-  "name": "SohailSuper Store",
-  "short_name": "Sohail store",
+  "name": "Dukan POS",
+  "short_name": "Dukan",
+  "description": "Simple POS app for small shops",
   "start_url": "/dukan/",
+  "scope": "/dukan/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0f172a",
@@ -16,9 +18,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "lang": "en",
-  "categories": [
-    "shopping"
   ]
 }
