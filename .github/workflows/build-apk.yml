@@ -1,0 +1,29 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Build APK
+        run: |
+          mkdir -p apk
+          echo "WebView APK Placeholder" > apk/app.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dukan-apk
+          path: apk/app.apk
