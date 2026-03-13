@@ -10,24 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout code
       - uses: actions/checkout@v3
 
+      # 2️⃣ Setup Java
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android SDK
+      # 3️⃣ Setup Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # 4️⃣ Build APK (Placeholder)
       - name: Build APK
         run: |
-          mkdir apk
+          mkdir -p apk
           echo "WebView APK Placeholder" > apk/app.apk
 
+      # 5️⃣ Upload APK artifact
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dukan-apk
           path: apk/app.apk
