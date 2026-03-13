@@ -1,6 +1,6 @@
 {
-  "name": "Dukan POS",
-  "short_name": "Dukan",
+  "name": "SohailSuper Store",
+  "short_name": "Sohail store",
   "start_url": "/dukan/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -16,5 +16,9 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "lang": "en",
+  "categories": [
+    "shopping"
   ]
 }
