@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sohail Super Store | Pro ERP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root { 
+            --brand: #6366f1; --bg: #0a0c10; --card: #161b22; --text: #f0f6fc;
+            --success: #238636; --danger: #da3633; --warning: #d29922;
+        }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 30px; border: 1px solid var(--brand); text-align: center; width: 85%; max-width: 400px; box-shadow: 0 0 30px rgba(99,102,241,0.3); }
+
+        nav { width: 94%; height: 70px; background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(20px); position: fixed; bottom: 15px; left: 3%; display: flex; justify-content: space-around; border: 1px solid #30363d; z-index: 100; border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8b949e; width: 15%; transition: 0.3s; font-size: 10px; cursor: pointer; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--brand); transform: translateY(-5px); }
+
+        main { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 110px; }
+        .screen { display: none; opacity: 0; animation: fadeIn 0.4s forwards; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-box { padding: 20px; border-radius: 20px; background: #1c2128; border: 1px solid #30363d; text-align: center; position: relative; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .stat-box i { font-size: 28px; margin-bottom: 12px; }
+        .stat-box h2 { margin: 4px 0 0 0; font-size: 20px; }
+
+        .s-sales { animation: pulse-green 2.5s infinite; border-bottom: 3px solid var(--success); }
+        .s-exp { animation: pulse-red 2.5s infinite; border-bottom: 3px solid var(--danger); }
+        .s-profit { animation: pulse-blue 2.5s infinite; border-bottom: 3px solid var(--brand); }
+        .s-khata { animation: pulse-orange 2.5s infinite; border-bottom: 3px solid var(--warning); }
+
+        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 10px rgba(35,134,54,0.2); } 50% { box-shadow: 0 0 45px rgba(35,134,54,0.8); } }
+        @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 10px rgba(218,54,51,0.2); } 50% { box-shadow: 0 0 45px rgba(218,54,51,0.8); } }
+        @keyframes pulse-blue { 0%, 100% { box-shadow: 0 0 10px rgba(99,102,241,0.2); } 50% { box-shadow: 0 0 45px rgba(99,102,241,0.8); } }
+        @keyframes pulse-orange { 0%, 100% { box-shadow: 0 0 10px rgba(210,153,34,0.2); } 50% { box-shadow: 0 0 45px rgba(210,153,34,0.8); } }
+
+        .pos-item { background: #1c2128; padding: 18px 10px; border-radius: 18px; border: 1px solid #30363d; text-align: center; cursor: pointer; transition: 0.2s; }
+        .pos-item:active { border-color: var(--brand); box-shadow: 0 0 40px var(--brand); transform: scale(0.92); }
+
+        .glass-card { background: var(--card); border-radius: 22px; padding: 20px; border: 1px solid #30363d; margin-bottom: 15px; }
+        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 14px; border-radius: 12px; width: 100%; margin-bottom: 12px; outline: none; }
+        .btn-pro { width: 100%; padding: 15px; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td, th { padding: 14px 10px; border-bottom: 1px solid #21262d; text-align: left; font-size: 13px; }
+        th { background: #1c2128; color: var(--brand); font-weight: 800; }
+        .action-icons i { cursor: pointer; margin-left: 18px; font-size: 22px; transition: 0.2s; display: inline-block; }
+
+        #devModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:5000; justify-content:center; align-items:center; backdrop-filter: blur(8px); }
+        .modal-content { background:var(--card); padding:30px; border-radius:25px; border:1px solid var(--brand); width:85%; max-width:400px; text-align:center; box-shadow: 0 0 50px rgba(99,102,241,0.4); }
+        .dev-link { display:block; padding:15px; margin:10px 0; border-radius:12px; text-decoration:none; color:white; font-weight:bold; cursor: pointer; }
+        .live-dot { width: 10px; height: 10px; background: #238636; border-radius: 50%; display: inline-block; margin-right: 6px; box-shadow: 0 0 10px #238636; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* Scanner Overlay */
+        #scannerModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:6000; flex-direction:column; justify-content:center; align-items:center; }
+    </style>
+</head>
+<body>
+
+<div id="scannerModal">
+    <div id="reader" style="width: 300px; background:white; border-radius:15px; overflow:hidden;"></div>
+    <button onclick="stopScanner()" class="btn-pro" style="margin-top:20px; width:200px; background:var(--danger)">CLOSE CAMERA</button>
+</div>
+
+<div id="devModal">
+    <div class="modal-content">
+        <h3>Contact Developer</h3>
+        <a href="https://wa.me/923178973375" target="_blank" class="dev-link" style="background:#25d366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        <a href="mailto:shahanullah@imsciences.edu.pk" target="_blank" class="dev-link" style="background:#ea4335;"><i class="fas fa-envelope"></i> Gmail</a>
+        <a href="https://facebook.com/shahanullah890" target="_blank" class="dev-link" style="background:#1877f2;"><i class="fab fa-facebook"></i> Facebook</a>
+        <button onclick="closeDev()" class="btn-pro" style="margin-top:15px; background:#444;">Close</button>
+    </div>
+</div>
+
+<div id="loginOverlay">
+    <div class="login-box">
+        <i class="fas fa-user-shield" style="font-size: 50px; color: var(--brand); margin-bottom: 20px;"></i>
+        <h2>Sohail Super Store</h2>
+        <input type="password" id="pinInput" placeholder="Enter PIN" style="text-align: center; font-size: 20px; letter-spacing: 10px;">
+        <button onclick="checkLogin()" class="btn-pro">UNLOCK SYSTEM</button>
+        <p id="loginError" style="color: var(--danger); font-size: 12px; margin-top: 15px; display: none;">Invalid PIN!</p>
+    </div>
+</div>
+
+<nav id="mainNav" style="display: none;">
+    <div class="nav-item active" onclick="tab('dash', this)"><i class="fas fa-home"></i><span>Home</span></div>
+    <div class="nav-item" onclick="tab('pos', this)"><i class="fas fa-shopping-cart"></i><span>POS</span></div>
+    <div class="nav-item" onclick="tab('inv', this)"><i class="fas fa-box"></i><span>Stock</span></div>
+    <div class="nav-item" onclick="tab('acc', this)"><i class="fas fa-wallet"></i><span>Exp</span></div>
+    <div class="nav-item" onclick="tab('khata', this)"><i class="fas fa-user-friends"></i><span>Khata</span></div>
+    <div class="nav-item" onclick="tab('reports', this)"><i class="fas fa-chart-line"></i><span>Reports</span></div>
+</nav>
+
+<main id="mainContent" style="display: none;">
+    <div id="dash" class="screen active">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h2 style="margin:0; font-weight:800;">Sohail Super Store</h2>
+            <div style="font-size:13px; color:#4ade80; font-weight:bold;"><span class="live-dot"></span>Online</div>
+        </div>
+        <div class="stats-grid" id="stats-area"></div>
+        <div class="glass-card">
+            <h4>Store Address & Contact</h4>
+            <p style="font-size:12px; color:#8b949e">Sango Landi Bala Peshawar<br><b>PH: +92 333 9161480</b></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                <button onclick="openDev()" class="btn-pro" style="font-size: 11px; padding: 10px;"><i class="fas fa-user-shield"></i> DEV CONTACT</button>
+                <button onclick="logout()" class="btn-pro" style="font-size: 11px; padding: 10px; background: var(--danger);"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
+            </div>
+            <button id="syncBtn" onclick="syncToCloud()" class="btn-pro" style="margin-top:10px; background:#a855f7; font-size:11px; padding:10px;">
+                <i class="fas fa-cloud-upload-alt"></i> CLOUD SYNC
+            </button>
+        </div>
+    </div>
+
+    <div id="inv" class="screen">
+        <div class="glass-card"><h3>Inventory</h3>
+            <input type="hidden" id="pIdx">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 0px;">
+                <input type="text" id="pName" placeholder="Product Name / Barcode">
+                <button onclick="startScanner()" style="background:var(--brand); color:white; border:none; padding:12px 15px; border-radius:12px; margin-bottom:12px; cursor:pointer;">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <input type="number" id="pPrice" placeholder="Price">
+            <input type="number" id="pQty" placeholder="Quantity">
+            <button onclick="saveProduct()" class="btn-pro">SAVE PRODUCT</button>
+            <table id="invTable"></table>
+        </div>
+    </div>
+
+    <div id="pos" class="screen">
+        <div class="glass-card"><input type="text" placeholder="Search Items..." onkeyup="renderPOS(this.value)"><div id="posItems" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:12px;"></div></div>
+        <div class="glass-card"><h4>Cart</h4><div id="cartList"></div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px"><h2>Rs. <span id="cartTotal">0</span></h2><button onclick="handlePrint()" class="btn-pro" style="width:140px">PRINT BILL</button></div></div>
+    </div>
+
+    <div id="acc" class="screen"><div class="glass-card"><h3>Expenses</h3><input type="hidden" id="eIdx"><input type="text" id="eTitle" placeholder="Reason"><input type="number" id="eAmt" placeholder="Amount"><button onclick="saveExpense()" class="btn-pro" style="background:var(--danger)">SAVE EXPENSE</button><table id="expTable"></table></div></div>
+    <div id="khata" class="screen"><div class="glass-card"><h3>Khata</h3><input type="hidden" id="kIdx"><input type="text" id="kName" placeholder="Customer Name"><input type="number" id="kDue" placeholder="Balance Due"><button onclick="saveKhata()" class="btn-pro" style="background:var(--warning)">SAVE KHATA</button><table id="khataTable"></table></div></div>
+    
+    <div id="reports" class="screen">
+        <div class="glass-card">
+            <h3>Sales Analytics</h3>
+            <div style="width:100%; height:200px; margin-bottom:20px;"><canvas id="salesChart"></canvas></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <button onclick="printReport('stock')" class="btn-pro" style="font-size: 11px;"><i class="fas fa-boxes"></i> STOCK REPORT</button>
+                <button onclick="printReport('exp')" class="btn-pro" style="background:var(--danger); font-size: 11px;"><i class="fas fa-file-invoice-dollar"></i> EXPENSE REPORT</button>
+            </div>
+            <hr style="border: 0.5px solid #30363d; margin: 20px 0;">
+            <h3>Invoice History</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="date" id="searchDate" style="margin-bottom: 0;">
+                <button onclick="filterInvoices()" class="btn-pro" style="width: 80px;"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="invoiceList" style="max-height: 300px; overflow-y: auto;">
+                <p style="font-size: 12px; color: #8b949e; text-align: center;">Select a date to see invoices</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpRjamz2f7gW9Ep8MyyLA36eL_Bf_Tpg06MwuDfRVEJgf8cjYlQDm4KMXiRZbQeKBjQQ/exec";
+    const CORRECT_PIN = "1234";
+    let db = JSON.parse(localStorage.getItem('sohail_super_v1')) || { stock: [], sales: [], expenses: [], khata: [] };
+    let cart = [], myChart = null, html5QrCode = null;
+
+    function save() { localStorage.setItem('sohail_super_v1', JSON.stringify(db)); refresh(); document.querySelectorAll('main input').forEach(i => { if(i.type !== 'hidden') i.value = ''; }); }
+    
+    function refresh() {
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const ts = db.sales.filter(s => s.date === todayStr).reduce((a,b)=>a+b.total, 0); 
+        const te = db.expenses.filter(e => e.date === todayStr).reduce((a,b)=>a+b.amt, 0); 
+        const tk = db.khata.reduce((a,b)=>a+b.due, 0);
+
+        document.getElementById('stats-area').innerHTML = `
+            <div class="stat-box s-sales"><i class="fas fa-chart-line" style="color:var(--success)"></i><small>Today's Sales</small><h2>${ts}</h2></div>
+            <div class="stat-box s-exp"><i class="fas fa-wallet" style="color:var(--danger)"></i><small>Today's Exp</small><h2>${te}</h2></div>
+            <div class="stat-box s-profit"><i class="fas fa-hand-holding-usd" style="color:var(--brand)"></i><small>Today's Profit</small><h2>${ts-te}</h2></div>
+            <div class="stat-box s-khata"><i class="fas fa-users" style="color:var(--warning)"></i><small>Total Khata</small><h2>${tk}</h2></div>`;
+        
+        document.getElementById('invTable').innerHTML = `<thead><tr><th>PRODUCT</th><th>PRICE</th><th>ACTION</th></tr></thead><tbody>` + db.stock.map((p,i)=>`<tr><td><b>${p.name}</b><br><small>Qty: ${p.qty}</small></td><td>Rs. ${p.price}</td><td class="action-icons"><i class="fas fa-edit" onclick="editProd(${i})" style="color:var(--warning)"></i><i class="fas fa-trash" onclick="del('stock',${i})" style="color:var(--danger)"></i></td></tr>`).join('') + `</tbody>`;
+        document.getElementById('expTable').innerHTML = `<thead><tr><th>REASON</th><th>AMOUNT</th><th>ACTION</th></tr></thead><tbody>` + db.expenses.map((e,i)=>`<tr><td><b>${e.title}</b><br><small>${e.date}</small></td><td>Rs. ${e.amt}</td><td class="action-icons"><i class="fas fa-edit" onclick="editExp(${i})" style="color:var(--warning)"></i><i class="fas fa-trash" onclick="del('expenses',${i})" style="color:var(--danger)"></i></td></tr>`).join('') + `</tbody>`;
+        document.getElementById('khataTable').innerHTML = `<thead><tr><th>CUSTOMER</th><th>BALANCE</th><th>ACTION</th></tr></thead><tbody>` + db.khata.map((k,i)=>`<tr><td><b>${k.name}</b><br><small>${k.date}</small></td><td>Rs. ${k.due}</td><td class="action-icons"><i class="fas fa-edit" onclick="editKhata(${i})" style="color:var(--warning)"></i><i class="fas fa-trash" onclick="del('khata',${i})" style="color:var(--danger)"></i></td></tr>`).join('') + `</tbody>`;
+        renderPOS();
+    }
+
+    // Scanner Functions
+    async function startScanner() {
+        document.getElementById('scannerModal').style.display = 'flex';
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+        try {
+            await html5QrCode.start({ facingMode: "environment" }, config, (text) => {
+                processScan(text);
+                stopScanner();
+            });
+        } catch (err) { alert("Camera Error"); stopScanner(); }
+    }
+    function stopScanner() {
+        if(html5QrCode) { html5QrCode.stop().then(() => { document.getElementById('scannerModal').style.display = 'none'; }); }
+        else { document.getElementById('scannerModal').style.display = 'none'; }
+    }
+    function processScan(code) {
+        let existing = db.stock.find(p => p.barcode === code || p.name === code);
+        if(existing) {
+            document.getElementById('pName').value = existing.name;
+            document.getElementById('pPrice').value = existing.price;
+        } else {
+            document.getElementById('pName').value = code;
+        }
+    }
+
+    function saveProduct() { 
+        let n = document.getElementById('pName').value.trim(), p = parseFloat(document.getElementById('pPrice').value), q = parseInt(document.getElementById('pQty').value), id = document.getElementById('pIdx').value;
+        if(!n || isNaN(p)) return;
+        if(id !== '') {
+            db.stock[id] = {name:n, price:p, qty:q, barcode:n};
+        } else {
+            let idx = db.stock.findIndex(item => item.name.toLowerCase() === n.toLowerCase() && parseFloat(item.price) === p);
+            if (idx !== -1) { db.stock[idx].qty += q; } 
+            else { db.stock.push({name:n, price:p, qty:q, barcode:n}); }
+        }
+        save(); 
+    }
+
+    function handlePrint(reprintData = null) {
+        let items, totalAmt;
+        if(reprintData) { items = reprintData.items; totalAmt = reprintData.total; } 
+        else { if(cart.length === 0) return; items = [...cart]; totalAmt = document.getElementById('cartTotal').innerText; }
+        let itemsHtml = items.map(c => `<tr><td style="padding:8px 0; border-bottom:1px dashed #ccc;">${c.name.toUpperCase()}</td><td style="text-align:center; border-bottom:1px dashed #ccc;">${c.count}</td><td style="text-align:right; border-bottom:1px dashed #ccc;">${c.price}</td><td style="text-align:right; border-bottom:1px dashed #ccc;">${c.price * c.count}</td></tr>`).join('');
+        const frame = document.createElement('iframe');
+        frame.style.display = 'none';
+        document.body.appendChild(frame);
+        const win = frame.contentWindow;
+        win.document.write(`<html><head><style>body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; font-size: 13px; } .center { text-align: center; } table { width: 100%; border-collapse: collapse; } th { border-bottom: 1px solid #000; padding: 5px 0; } .total-box { border-top: 1px solid #000; margin-top: 10px; padding-top: 5px; font-weight: bold; font-size: 16px; }</style></head><body><div class="center"><h2>SOHAIL SUPER STORE</h2><p>PH: +92 333 9161480</p><hr>INVOICE ${reprintData ? '(RE-PRINT)' : ''}<hr></div><table><thead><tr><th align="left">ITEM</th><th align="center">QTY</th><th align="right">RATE</th><th align="right">TOTAL</th></tr></thead><tbody>${itemsHtml}</tbody></table><div class="total-box" style="display:flex; justify-content:space-between;"><span>NET TOTAL:</span><span>RS. ${totalAmt}.00</span></div><div style="margin-top:15px; font-size:11px;"><b>TERMS & CONDITIONS:</b><br>1. No Cash Refund.<br>2. Same day exchange for food.<br>3. Opened packs not accepted.<br>4. Receipt mandatory.</div><div class="center" style="margin-top:15px; font-size:10px;"><b>DEVELOPED BY: SHAHAN ULLAH</b></div></body></html>`);
+        win.document.close(); win.focus(); win.print();
+        if(!reprintData) {
+            db.sales.push({ total: parseFloat(totalAmt), date: new Date().toLocaleDateString('en-CA'), items: items, time: new Date().toLocaleTimeString() });
+            cart = []; updateCartUI(); save();
+        }
+        setTimeout(() => { document.body.removeChild(frame); }, 1000);
+    }
+
+    function filterInvoices() {
+        const d = document.getElementById('searchDate').value;
+        if(!d) return;
+        const filtered = db.sales.filter(s => s.date === d);
+        const list = document.getElementById('invoiceList');
+        if(filtered.length === 0) { list.innerHTML = `<p style="text-align:center; color:var(--danger)">No data</p>`; return; }
+        list.innerHTML = filtered.map(inv => `<div style="background:#1c2128; padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid #30363d; display:flex; justify-content:space-between; align-items:center;"><div><b>Rs. ${inv.total}</b><br><small>${inv.time || ''}</small></div><button onclick='reprintInvoice(${JSON.stringify(inv)})' class="btn-pro" style="width:auto; padding:8px 15px; font-size:10px;">RE-PRINT</button></div>`).join('');
+    }
+
+    function reprintInvoice(data) { handlePrint(data); }
+    function checkLogin() { if(document.getElementById('pinInput').value === CORRECT_PIN) { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('mainNav').style.display = 'flex'; document.getElementById('mainContent').style.display = 'block'; sessionStorage.setItem('isLoggedIn', 'true'); refresh(); } else { document.getElementById('loginError').style.display = 'block'; } }
+    window.onload = () => { if(sessionStorage.getItem('isLoggedIn') === 'true') { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('mainNav').style.display = 'flex'; document.getElementById('mainContent').style.display = 'block'; refresh(); } };
+    function logout() { sessionStorage.removeItem('isLoggedIn'); location.reload(); }
+    function tab(id, el) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(el) el.classList.add('active'); if(id === 'reports') renderChart(); refresh(); }
+    function openDev() { document.getElementById('devModal').style.display = 'flex'; }
+    function closeDev() { document.getElementById('devModal').style.display = 'none'; }
+    function renderPOS(q="") { document.getElementById('posItems').innerHTML = db.stock.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())).map((p,idx)=>`<div class="pos-item" onclick="addToCart(${db.stock.indexOf(p)})"><b>${p.name}</b><br><small style="color:var(--brand)">Rs. ${p.price}</small><br><small>Stock: ${p.qty}</small></div>`).join(''); }
+    function addToCart(i) { if(db.stock[i].qty > 0){ let item = cart.find(c=>c.name===db.stock[i].name); if(item) item.count++; else cart.push({...db.stock[i], count:1, sIdx:i}); db.stock[i].qty--; updateCartUI(); renderPOS(); } }
+    function removeCartItem(i) { let item = cart[i]; db.stock[item.sIdx].qty += item.count; cart.splice(i, 1); updateCartUI(); renderPOS(); }
+    function updateCartUI() { let t=0; document.getElementById('cartList').innerHTML = cart.map((c, i) => { t+=(c.price*c.count); return `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #21262d"><span><b>${c.name}</b> x${c.count}</span><span>${c.price*c.count} <i class="fas fa-times-circle" onclick="removeCartItem(${i})" style="color:var(--danger); margin-left:10px;"></i></span></div>`; }).join(''); document.getElementById('cartTotal').innerText = t; }
+    function renderChart() { const ctx = document.getElementById('salesChart').getContext('2d'); const last7 = db.sales.slice(-7); if (myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'line', data: { labels: last7.map(s => s.date), datasets: [{ label: 'Sales', data: last7.map(s => s.total), borderColor: '#6366f1', fill: true }] }, options: { responsive: true, maintainAspectRatio: false } }); }
+    function printReport(type) { let content = "", title = "", headers = ""; if(type === 'stock') { title = "Stock"; headers = "<tr><th>Item</th><th>Qty</th></tr>"; content = db.stock.map(p => `<tr><td>${p.name}</td><td>${p.qty}</td></tr>`).join(''); } else { title = "Expense"; headers = "<tr><th>Reason</th><th>Amount</th></tr>"; content = db.expenses.map(e => `<tr><td>${e.title}</td><td>${e.amt}</td></tr>`).join(''); } const win = window.open('', '_blank'); win.document.write(`<html><body onload="window.print()"><h2>${title} Report</h2><table border="1" width="100%">${headers}${content}</table></body></html>`); }
+    function del(key, i) { if(confirm("Sure?")) { db[key].splice(i, 1); save(); } }
+    function saveExpense() { let t = document.getElementById('eTitle').value, a = document.getElementById('eAmt').value, id = document.getElementById('eIdx').value; if(id !== '') db.expenses[id] = {title:t, amt:parseFloat(a), date:new Date().toLocaleDateString('en-CA')}; else db.expenses.push({title:t, amt:parseFloat(a), date:new Date().toLocaleDateString('en-CA')}); save(); }
+    function saveKhata() { let n = document.getElementById('kName').value, d = document.getElementById('kDue').value, id = document.getElementById('kIdx').value; if(id !== '') db.khata[id] = {name:n, due:parseFloat(d), date:new Date().toLocaleDateString('en-CA')}; else db.khata.push({name:n, due:parseFloat(d), date:new Date().toLocaleDateString('en-CA')}); save(); }
+    function editProd(i) { const p = db.stock[i]; document.getElementById('pName').value = p.name; document.getElementById('pPrice').value = p.price; document.getElementById('pQty').value = p.qty; document.getElementById('pIdx').value = i; }
+    function editExp(i) { const e = db.expenses[i]; document.getElementById('eTitle').value = e.title; document.getElementById('eAmt').value = e.amt; document.getElementById('eIdx').value = i; }
+    function editKhata(i) { const k = db.khata[i]; document.getElementById('kName').value = k.name; document.getElementById('kDue').value = k.due; document.getElementById('kIdx').value = i; }
+    async function syncToCloud() { try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(db) }); alert("Sync Done!"); } catch (e) { alert("Sync Fail!"); } refresh(); }
+
+    refresh();
+</script>
+</body>
+</html>
